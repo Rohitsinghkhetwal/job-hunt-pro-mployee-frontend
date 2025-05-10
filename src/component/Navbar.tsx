@@ -1,31 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useDebounce } from "./UseDebounce";
-import axios from "axios";
 import useJobStore from "../Store/Store";
 
 const Navbar: React.FC = () => {
-  const { setJobs } = useJobStore();
+  const { fetchJobs, setSearchTerm } = useJobStore();
 
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearch] = useState("");
   const debounceSearchTerm = useDebounce(searchTerm, 500);
 
   useEffect(() => {
-    const searchJobBasedLocation = async () => {
-      try {
-        if (debounceSearchTerm.trim() === "") return;
-
-        const res = await axios.get(
-          `${
-            import.meta.env.VITE_PUBLIC_SERVER_URL
-          }/search?location=${searchTerm}`
-        );
-        setJobs(res.data.data);
-        console.log("this is the jobs", res.data.data);
-      } catch (err) {
-        console.log("Error fetching jobs");
-      }
-    };
-    searchJobBasedLocation();
+    setSearchTerm(debounceSearchTerm);
+    fetchJobs();
   }, [debounceSearchTerm]);
 
   return (
@@ -41,7 +26,7 @@ const Navbar: React.FC = () => {
           <input
             type="text"
             placeholder="Search for location"
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
             value={searchTerm}
             className="w-full pl-4 pr-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
           />

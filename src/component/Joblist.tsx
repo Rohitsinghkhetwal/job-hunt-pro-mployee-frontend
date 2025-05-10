@@ -1,42 +1,41 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useState } from "react";
 import { BsBuilding } from "react-icons/bs";
 import { FaLocationDot } from "react-icons/fa6";
 import useJobStore from "../Store/Store";
 
 const JobBoard: React.FC = () => {
-  const { setJobs, jobs } = useJobStore();
+  const {jobs, currentPage, setCurrentPage, fetchJobs,totalCount } = useJobStore();
   const [selectedJob, setSelectedJob] = useState(null);
 
-  const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  console.log("jobs", jobs);
 
-  const fetchJobs = async (pageNumber: number) => {
-    setLoading(true);
-    try {
-      const result = await axios.get(
-        `${
-          import.meta.env.VITE_PUBLIC_SERVER_URL
-        }/get-jobs?page=${pageNumber}&limit=20`
-      );
-      const data = result.data.data;
-      setJobs(data);
-    } catch (err) {
-      console.log("Something went wrong while fetching the data");
-    } finally {
-      setLoading(false);
+  const handleNextPage = () => {
+    setCurrentPage(currentPage + 1);
+    fetchJobs();
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+      fetchJobs();
     }
   };
 
-  useEffect(() => {
-    fetchJobs(page);
-  }, [page]);
+  // useEffect(() => {
+  //   fetchJobs(page);
+  // }, [page]);
 
   return (
     <div className="flex h-screen mt-2">
+      
       {/* Left Section  */}
       <div className="w-1/2 overflow-y-scroll border-r-2 border-gray-400 scrollbar-hide">
+      {totalCount && (
+        <h2 className="text-xl font-semibold mb-2 text-center">
+        {totalCount} jobs found
+      </h2>
+
+      )}
+      
         {jobs.map((job: any) => (
           <div
             key={job._id}
@@ -60,20 +59,18 @@ const JobBoard: React.FC = () => {
         <div className="flex justify-between items-center mx-4 my-4">
           <button
             className="text-pink-600 px-4 py-2 rounded cursor-pointer hover:to-pink-900"
-            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-            disabled={page === 1 || loading}
+            onClick={handlePrevPage}
           >
             Previous
           </button>
 
-          <span>Page {page}</span>
 
           <button
             className="text-pink-600 px-4 py-2 rounded hover:to-pink-900"
-            onClick={() => setPage((prev) => prev + 1)}
-            disabled={loading}
+            onClick={handleNextPage}
+            
           >
-            {loading ? "Loading..." : "Next"}
+            Next
           </button>
         </div>
       </div>
